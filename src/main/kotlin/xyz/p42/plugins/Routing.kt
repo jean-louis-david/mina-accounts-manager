@@ -7,7 +7,6 @@ import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.html.respondHtml
 import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.request.receiveText
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.put
@@ -19,27 +18,18 @@ import kotlinx.html.code
 import kotlinx.html.head
 import kotlinx.html.style
 import kotlinx.html.title
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import xyz.p42.accounts
-import xyz.p42.accountsToBeReleased
-import xyz.p42.graphQlEndpoint
 import xyz.p42.json
-import xyz.p42.model.Account
-import xyz.p42.model.Message
-import xyz.p42.properties.ACCOUNTS_TO_KEEP_UNUSED
 import xyz.p42.properties.HTML_CODE_BLOCK_STYLE
-import xyz.p42.properties.IS_REGULAR_ACCOUNT_QUERY_PARAM
 import xyz.p42.properties.SERVICE_TITLE
-import xyz.p42.properties.UNLOCK_ACCOUNT_QUERY_PARAM
+import xyz.p42.services.accountAcquisitionHandler
+import xyz.p42.services.accountLockStateHandler
+import xyz.p42.services.accountReleaseHandler
 import xyz.p42.utils.LoggingUtils
-import xyz.p42.utils.getAccountVerificationKey
 import xyz.p42.utils.getErrorHtml
 import xyz.p42.utils.getWelcomeMessage
-import xyz.p42.utils.isEndpointAvailable
-import xyz.p42.utils.lockAccount
-import xyz.p42.utils.releaseAccountAndGetNextIndex
-import xyz.p42.utils.unlockAccount
-import kotlin.random.Random
 
 val logger = LoggingUtils.logger
 
@@ -49,6 +39,7 @@ private val listAcquiredAccountsMutex = Mutex()
 private val lockAccountMutex = Mutex()
 private val unlockAccountMutex = Mutex()
 
+@ExperimentalSerializationApi
 fun Application.configureRouting() {
   install(StatusPages) {
     exception<Throwable> { call, cause ->
@@ -84,94 +75,12 @@ fun Application.configureRouting() {
     }
     get("/acquire-account") {
       acquireAccountMutex.withLock {
-        val isRegularAccount = call.request.queryParameters[IS_REGULAR_ACCOUNT_QUERY_PARAM]?.toBoolean() ?: true
-        val unlockAccount = call.request.queryParameters[UNLOCK_ACCOUNT_QUERY_PARAM]?.toBoolean() ?: false
-
-        try {
-          var index = Random.nextInt(0, accounts.size - ACCOUNTS_TO_KEEP_UNUSED)
-          if (isRegularAccount && isEndpointAvailable(graphQlEndpoint)) {
-            logger.info("An attempt to acquire non-zkApp account...")
-
-            val verificationKey: String? = getAccountVerificationKey(accounts[index])
-            while (verificationKey != null && accounts[index].used) {
-              logger
-                .info(
-                  "Account with index #${index} is already in use or this is the zkApp account when it is not expected!"
-                )
-              index = releaseAccountAndGetNextIndex()
-            }
-          } else {
-            logger.info("An attempt to acquire any account...")
-
-            while (accounts[index].used) {
-              logger
-                .info(
-                  "Account with index #${index} is already in use!"
-                )
-              index = releaseAccountAndGetNextIndex()
-            }
-          }
-          accounts[index].used = true
-          logger
-            .info(
-              "Acquired account with Index #${index} and public key ${accounts[index].pk}"
-            )
-          if (unlockAccount) {
-            logger.info("Unlocking account with index #${index}...")
-            unlockAccount(accounts[index])
-          }
-          call.respondText(
-            text = json.encodeToString(
-              value = accounts[index]
-            ),
-            contentType = ContentType.Application.Json,
-            status = HttpStatusCode.OK
-          )
-        } catch (e: Throwable) {
-          call.respondText(
-            text = json.encodeToString(
-              value = Message(
-                code = HttpStatusCode.InternalServerError.value,
-                message = e.message!!
-              )
-            ),
-            contentType = ContentType.Application.Json,
-            status = HttpStatusCode.InternalServerError
-          )
-        }
+        accountAcquisitionHandler(call)
       }
     }
     put("/release-account") {
       releaseAccountMutex.withLock {
-        try {
-          val account = json.decodeFromString<Account>(call.receiveText())
-          val message = "Account with public key ${account.pk} is set to be released."
-
-          accountsToBeReleased.add(account)
-          logger.info(message)
-
-          call.respondText(
-            text = json.encodeToString(
-              value = Message(
-                code = HttpStatusCode.OK.value,
-                message = message
-              )
-            ),
-            contentType = ContentType.Application.Json,
-            status = HttpStatusCode.OK
-          )
-        } catch (e: Throwable) {
-          call.respondText(
-            text = json.encodeToString(
-              value = Message(
-                code = HttpStatusCode.InternalServerError.value,
-                message = e.message!!
-              )
-            ),
-            contentType = ContentType.Application.Json,
-            status = HttpStatusCode.InternalServerError
-          )
-        }
+        accountReleaseHandler(call)
       }
     }
     get("/list-acquired-accounts") {
@@ -188,66 +97,12 @@ fun Application.configureRouting() {
     }
     put("/lock-account") {
       lockAccountMutex.withLock {
-        try {
-          val account = json.decodeFromString<Account>(call.receiveText())
-          val lockedAccount = lockAccount(account)
-          val message = "Account with public key $lockedAccount is locked."
-
-          logger.info(message)
-          call.respondText(
-            text = json.encodeToString(
-              value = Message(
-                code = HttpStatusCode.OK.value,
-                message = message
-              )
-            ),
-            contentType = ContentType.Application.Json,
-            status = HttpStatusCode.OK
-          )
-        } catch (e: Throwable) {
-          call.respondText(
-            text = json.encodeToString(
-              value = Message(
-                code = HttpStatusCode.InternalServerError.value,
-                message = e.message!!
-              )
-            ),
-            contentType = ContentType.Application.Json,
-            status = HttpStatusCode.InternalServerError
-          )
-        }
+        accountLockStateHandler(call, isLock = true)
       }
     }
     put("/unlock-account") {
       unlockAccountMutex.withLock {
-        try {
-          val account = json.decodeFromString<Account>(call.receiveText())
-          val unlockedAccount = unlockAccount(account)
-          val message = "Account with public key $unlockedAccount is unlocked."
-
-          logger.info(message)
-          call.respondText(
-            text = json.encodeToString(
-              value = Message(
-                code = HttpStatusCode.OK.value,
-                message = message
-              )
-            ),
-            contentType = ContentType.Application.Json,
-            status = HttpStatusCode.OK
-          )
-        } catch (e: Throwable) {
-          call.respondText(
-            text = json.encodeToString(
-              value = Message(
-                code = HttpStatusCode.InternalServerError.value,
-                message = e.message!!
-              )
-            ),
-            contentType = ContentType.Application.Json,
-            status = HttpStatusCode.InternalServerError
-          )
-        }
+        accountLockStateHandler(call, isLock = false)
       }
     }
   }

@@ -130,7 +130,7 @@ fun getUnlockAccountGraphQlQuery(publicKey: String) =
     """.trimIndent()
 
 suspend fun releaseAccountAndGetNextIndex(): Int {
-  if (accounts.isNotEmpty()) {
+  if (accounts.isNotEmpty() && accountsToBeReleased.isNotEmpty()) {
     val publicKey = accountsToBeReleased.removeLast().pk
     accounts[accounts.indexOfFirst {
       it.pk == publicKey
