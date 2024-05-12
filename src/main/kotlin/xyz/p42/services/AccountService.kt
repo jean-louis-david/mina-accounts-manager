@@ -27,7 +27,7 @@ suspend fun accountAcquisitionHandler(call: ApplicationCall) =
   try {
     val isRegularAccount = call.request.queryParameters[IS_REGULAR_ACCOUNT_QUERY_PARAM]?.toBoolean() ?: true
     val unlockAccount = call.request.queryParameters[UNLOCK_ACCOUNT_QUERY_PARAM]?.toBoolean() ?: false
-    var index = Random.nextInt(0, accounts.size - ACCOUNTS_TO_KEEP_UNUSED)
+    var index = Random.Default.nextInt(0, accounts.size - ACCOUNTS_TO_KEEP_UNUSED)
     while (true) {
       if (isRegularAccount && isEndpointAvailable(graphQlEndpoint)) {
         logger.info("An attempt to acquire non-zkApp account...")
