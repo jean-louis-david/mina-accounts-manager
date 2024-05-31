@@ -42,6 +42,8 @@ jobs:
       - name: Build Native Image
         run: |
           source $GITHUB_ENV
+          export JAVA_HOME=/usr/lib/jvm/graalvm
+          export PATH=$JAVA_HOME/bin:$PATH
           ./gradlew nativeCompile
 
       - name: Upload Native Image Artifact
