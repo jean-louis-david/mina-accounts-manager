@@ -18,9 +18,9 @@ jobs:
 
       - name: Download and Extract GraalVM
         run: |
-          wget https://download.oracle.com/graalvm/22/latest/graalvm-jdk-22_linux-x64_bin.tar.gz
-          tar -xzf graalvm-jdk-22_linux-x64_bin.tar.gz
-          mv graalvm-jdk-22.0.1+8.1 /usr/lib/jvm/graalvm
+          wget https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.1/graalvm-ce-java21-linux-amd64-21.0.1.tar.gz
+          tar -xzf graalvm-ce-java21-linux-amd64-21.0.1.tar.gz
+          sudo mv graalvm-ce-java21-21.0.1 /usr/lib/jvm/graalvm
 
       - name: Set up GraalVM
         run: |
@@ -42,8 +42,6 @@ jobs:
       - name: Build Native Image
         run: |
           source $GITHUB_ENV
-          export JAVA_HOME=/usr/lib/jvm/graalvm
-          export PATH=$JAVA_HOME/bin:$PATH
           ./gradlew nativeCompile
 
       - name: Upload Native Image Artifact
@@ -51,3 +49,4 @@ jobs:
         with:
           name: accounts-manager-native
           path: build/native/nativeCompile/accounts-manager
+
