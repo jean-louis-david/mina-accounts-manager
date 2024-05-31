@@ -48,17 +48,21 @@ jobs:
       - name: Confirm Native Image
         run: ls -l build/native/nativeCompile
 
+      - name: Archive Native Image
+        run: |
+          tar -czvf accounts-manager.tar.gz -C build/native/nativeCompile accounts-manager
+
       - name: Upload Native Image Artifact
         uses: actions/upload-artifact@v3
         with:
           name: accounts-manager-native
-          path: build/native/nativeCompile/accounts-manager
+          path: accounts-manager.tar.gz
 
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub Actions
         with:
           tag_name: v1.0.0  # Change this as necessary
           release_name: Release v1.0.0
@@ -68,9 +72,9 @@ jobs:
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub Actions
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/native/nativeCompile/accounts-manager
-          asset_name: accounts-manager
+          asset_path: accounts-manager.tar.gz
+          asset_name: accounts-manager.tar.gz
           asset_content_type: application/octet-stream
