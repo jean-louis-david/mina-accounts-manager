@@ -16,21 +16,24 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Download GraalVM
+        run: |
+          wget https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.0.1/graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
+          tar -xzf graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
+          sudo mv graalvm-ce-java17-22.0.1 /usr/lib/jvm/graalvm
+
       - name: Set up GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          version: '21.3.0'
-          java-version: '11'
-          components: 'native-image'
+        run: |
+          sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/graalvm/bin/java 1
+          sudo update-alternatives --set java /usr/lib/jvm/graalvm/bin/java
+          export PATH=$PATH:/usr/lib/jvm/graalvm/bin
+          export JAVA_HOME=/usr/lib/jvm/graalvm
 
       - name: Verify GraalVM Installation
         run: |
           java -version
           gu --version
           gu list
-
-      - name: Install Native Image Component
-        run: gu install native-image
 
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
