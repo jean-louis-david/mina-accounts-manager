@@ -1,4 +1,4 @@
-# Mina Accounts-Manager
+# Accounts-Manager
 
 ---
 
