@@ -16,14 +16,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Download GraalVM
+      - name: Download and Extract GraalVM
         run: |
-          wget https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.0.1/graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
+          wget https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-22.0.1/graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
           tar -xzf graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
-          sudo mv graalvm-ce-java17-22.0.1 /usr/lib/jvm/graalvm
 
       - name: Set up GraalVM
         run: |
+          sudo mkdir -p /usr/lib/jvm/graalvm
+          sudo cp graalvm-community-openjdk-22.0.1+8.1/bin/* /usr/lib/jvm/graalvm/bin/
+          sudo cp -r graalvm-community-openjdk-22.0.1+8.1/lib /usr/lib/jvm/graalvm/
           sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/graalvm/bin/java 1
           sudo update-alternatives --set java /usr/lib/jvm/graalvm/bin/java
           export PATH=$PATH:/usr/lib/jvm/graalvm/bin
