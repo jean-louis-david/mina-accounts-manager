@@ -28,8 +28,8 @@ jobs:
           sudo cp -r graalvm-community-openjdk-22.0.1+8.1/lib /usr/lib/jvm/graalvm/
           sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/graalvm/bin/java 1
           sudo update-alternatives --set java /usr/lib/jvm/graalvm/bin/java
-          echo "export PATH=$PATH:/usr/lib/jvm/graalvm/bin" >> $GITHUB_ENV
-          echo "export JAVA_HOME=/usr/lib/jvm/graalvm" >> $GITHUB_ENV
+          echo "PATH=/usr/lib/jvm/graalvm/bin:$PATH" >> $GITHUB_ENV
+          echo "JAVA_HOME=/usr/lib/jvm/graalvm" >> $GITHUB_ENV
 
       - name: Verify GraalVM Installation
         run: |
@@ -47,14 +47,6 @@ jobs:
         run: |
           source $GITHUB_ENV
           ./gradlew nativeCompile
-
-      - name: Upload Native Image Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: accounts-manager-native
-          path: build/native/nativeCompile/accounts-manager
-
-        run: ./gradlew nativeCompile
 
       - name: Upload Native Image Artifact
         uses: actions/upload-artifact@v3
