@@ -1,42 +1,47 @@
-name: Build and Upload Mina Accounts-Manager
+name: Build Accounts-Manager Native Image
 
 on:
   push:
     branches:
-      - main
+      - develop
   pull_request:
     branches:
-      - main
+      - develop
 
 jobs:
-  build:
+  build-native-image:
     runs-on: ubuntu-20.04
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Set up GraalVM
-      run: |
-        wget https://github.com/oracle/graal/releases/download/jdk-22.0.1/graalvm-ce-java22-linux-amd64-22.0.1.tar.gz
-        tar -xzf graalvm-ce-java22-linux-amd64-22.0.1.tar.gz
-        sudo mv graalvm-ce-java22-22.0.1 /usr/lib/jvm/
-        echo "JAVA_HOME=/usr/lib/jvm/graalvm-ce-java22-22.0.1" >> $GITHUB_ENV
-        echo "PATH=$JAVA_HOME/bin:$PATH" >> $GITHUB_ENV
-        source $GITHUB_ENV
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: '21.0.1'
+          java-version: '21'
+          components: 'native-image'
 
-    - name: Install native-image
-      run: |
-        $JAVA_HOME/bin/gu install native-image
+      - name: Verify GraalVM Installation
+        run: |
+          java -version
+          gu --version
+          gu list
 
-    - name: Build native image
-      run: ./gradlew nativeCompile
+      - name: Install Native Image Component
+        run: gu install native-image
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: accounts-manager
-        path: build/native/nativeCompile/accounts-manager
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: '8.5-rc-2'
 
-    - name: List build directory contents
-      run: ls -R build/native/nativeCompile/
+      - name: Build Native Image
+        run: ./gradlew nativeCompile
+
+      - name: Upload Native Image Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: accounts-manager-native
+          path: build/native/nativeCompile/accounts-manager
