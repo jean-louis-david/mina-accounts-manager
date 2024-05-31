@@ -20,7 +20,7 @@ jobs:
         run: |
           wget https://download.oracle.com/graalvm/22/latest/graalvm-jdk-22_linux-x64_bin.tar.gz
           tar -xzf graalvm-jdk-22_linux-x64_bin.tar.gz
-          mv graalvm-jdk-22 /usr/lib/jvm/graalvm
+          mv $(tar -tf graalvm-jdk-22_linux-x64_bin.tar.gz | head -1 | cut -d'/' -f1) /usr/lib/jvm/graalvm
 
       - name: Set up GraalVM
         run: |
