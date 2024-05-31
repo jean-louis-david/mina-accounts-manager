@@ -23,7 +23,7 @@ jobs:
 
       - name: Set up GraalVM
         run: |
-          sudo mkdir -p /usr/lib/jvm/graalvm
+          sudo mkdir -p /usr/lib/jvm/graalvm/bin
           sudo cp graalvm-community-openjdk-22.0.1+8.1/bin/* /usr/lib/jvm/graalvm/bin/
           sudo cp -r graalvm-community-openjdk-22.0.1+8.1/lib /usr/lib/jvm/graalvm/
           sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/graalvm/bin/java 1
