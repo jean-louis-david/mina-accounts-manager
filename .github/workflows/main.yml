@@ -1,0 +1,42 @@
+name: Build and Upload Mina Accounts-Manager
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up GraalVM
+      run: |
+        wget https://github.com/oracle/graal/releases/download/jdk-22.0.1/graalvm-ce-java22-linux-amd64-22.0.1.tar.gz
+        tar -xzf graalvm-ce-java22-linux-amd64-22.0.1.tar.gz
+        sudo mv graalvm-ce-java22-22.0.1 /usr/lib/jvm/
+        echo "JAVA_HOME=/usr/lib/jvm/graalvm-ce-java22-22.0.1" >> $GITHUB_ENV
+        echo "PATH=$JAVA_HOME/bin:$PATH" >> $GITHUB_ENV
+        source $GITHUB_ENV
+
+    - name: Install native-image
+      run: |
+        $JAVA_HOME/bin/gu install native-image
+
+    - name: Build native image
+      run: ./gradlew nativeCompile
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: accounts-manager
+        path: build/native/nativeCompile/accounts-manager
+
+    - name: List build directory contents
+      run: ls -R build/native/nativeCompile/
