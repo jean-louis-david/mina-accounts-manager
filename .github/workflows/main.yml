@@ -32,8 +32,7 @@ jobs:
         run: |
           source $GITHUB_ENV
           java -version
-          /usr/lib/jvm/graalvm/lib/svm/bin/gu --version
-          /usr/lib/jvm/graalvm/lib/svm/bin/gu list
+          native-image --version
 
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
@@ -50,4 +49,3 @@ jobs:
         with:
           name: accounts-manager-native
           path: build/native/nativeCompile/accounts-manager
-
