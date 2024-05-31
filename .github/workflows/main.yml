@@ -20,8 +20,8 @@ jobs:
         run: |
           wget https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz
           tar -xzf graalvm-jdk-21_linux-x64_bin.tar.gz
-          ls -l
-          sudo mv graalvm-jdk-21* /usr/lib/jvm/graalvm
+          sudo mkdir -p /usr/lib/jvm
+          sudo mv graalvm-jdk-21.0.3+7.1 /usr/lib/jvm/graalvm
 
       - name: Set up GraalVM
         run: |
