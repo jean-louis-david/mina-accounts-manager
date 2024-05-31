@@ -1,4 +1,4 @@
-name: Build Accounts-Manager Native Image
+name: Build and Release Accounts-Manager Native Image
 
 on:
   push:
@@ -9,12 +9,12 @@ on:
       - develop
 
 jobs:
-  build-native-image:
+  build-and-release:
     runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4  # Updated to use Node.js 20
+        uses: actions/checkout@v4
 
       - name: Download and Extract GraalVM
         run: |
@@ -45,8 +45,32 @@ jobs:
           source $GITHUB_ENV
           ./gradlew nativeCompile
 
+      - name: Confirm Native Image
+        run: ls -l build/native/nativeCompile
+
       - name: Upload Native Image Artifact
         uses: actions/upload-artifact@v3
         with:
           name: accounts-manager-native
           path: build/native/nativeCompile/accounts-manager
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.0.0  # Change this as necessary
+          release_name: Release v1.0.0
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/native/nativeCompile/accounts-manager
+          asset_name: accounts-manager
+          asset_content_type: application/octet-stream
