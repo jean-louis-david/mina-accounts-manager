@@ -20,7 +20,7 @@ jobs:
         run: |
           wget https://download.oracle.com/graalvm/22/latest/graalvm-jdk-22_linux-x64_bin.tar.gz
           tar -xzf graalvm-jdk-22_linux-x64_bin.tar.gz
-          mv $(tar -tf graalvm-jdk-22_linux-x64_bin.tar.gz | head -1 | cut -d'/' -f1) /usr/lib/jvm/graalvm
+          mv graalvm-jdk-22.0.1+8.1 /usr/lib/jvm/graalvm
 
       - name: Set up GraalVM
         run: |
@@ -32,8 +32,8 @@ jobs:
         run: |
           source $GITHUB_ENV
           java -version
-          gu --version
-          gu list
+          /usr/lib/jvm/graalvm/lib/svm/bin/gu --version
+          /usr/lib/jvm/graalvm/lib/svm/bin/gu list
 
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
@@ -50,3 +50,4 @@ jobs:
         with:
           name: accounts-manager-native
           path: build/native/nativeCompile/accounts-manager
+
