@@ -14,13 +14,14 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # Updated to use Node.js 20
 
       - name: Download and Extract GraalVM
         run: |
           wget https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz
           tar -xzf graalvm-jdk-21_linux-x64_bin.tar.gz
-          sudo mv graalvm-jdk-21.0.1+12.1 /usr/lib/jvm/graalvm
+          ls -l
+          sudo mv graalvm-jdk-21* /usr/lib/jvm/graalvm
 
       - name: Set up GraalVM
         run: |
