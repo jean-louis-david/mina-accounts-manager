@@ -18,18 +18,15 @@ jobs:
 
       - name: Download and Extract GraalVM
         run: |
-          wget https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-22.0.1/graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
-          tar -xzf graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
+          wget https://download.oracle.com/graalvm/22/latest/graalvm-jdk-22_linux-x64_bin.tar.gz
+          tar -xzf graalvm-jdk-22_linux-x64_bin.tar.gz
+          mv graalvm-jdk-22 /usr/lib/jvm/graalvm
 
       - name: Set up GraalVM
         run: |
-          sudo mkdir -p /usr/lib/jvm/graalvm/bin
-          sudo cp graalvm-community-openjdk-22.0.1+8.1/bin/* /usr/lib/jvm/graalvm/bin/
-          sudo cp -r graalvm-community-openjdk-22.0.1+8.1/lib /usr/lib/jvm/graalvm/
-          sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/graalvm/bin/java 1
-          sudo update-alternatives --set java /usr/lib/jvm/graalvm/bin/java
-          echo "PATH=/usr/lib/jvm/graalvm/bin:$PATH" >> $GITHUB_ENV
           echo "JAVA_HOME=/usr/lib/jvm/graalvm" >> $GITHUB_ENV
+          echo "PATH=/usr/lib/jvm/graalvm/bin:$PATH" >> $GITHUB_ENV
+          source $GITHUB_ENV
 
       - name: Verify GraalVM Installation
         run: |
