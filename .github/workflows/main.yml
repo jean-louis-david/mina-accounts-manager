@@ -18,9 +18,9 @@ jobs:
 
       - name: Download and Extract GraalVM
         run: |
-          wget https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.1/graalvm-ce-java21-linux-amd64-21.0.1.tar.gz
-          tar -xzf graalvm-ce-java21-linux-amd64-21.0.1.tar.gz
-          sudo mv graalvm-ce-java21-21.0.1 /usr/lib/jvm/graalvm
+          wget https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz
+          tar -xzf graalvm-jdk-21_linux-x64_bin.tar.gz
+          sudo mv graalvm-jdk-21.0.1+12.1 /usr/lib/jvm/graalvm
 
       - name: Set up GraalVM
         run: |
@@ -49,4 +49,3 @@ jobs:
         with:
           name: accounts-manager-native
           path: build/native/nativeCompile/accounts-manager
-
