@@ -1,6 +1,6 @@
 package xyz.p42.properties
 
-const val SERVICE_TITLE = "Mina Accounts-Manager"
+const val SERVICE_TITLE = "Accounts Manager"
 const val HTML_CODE_BLOCK_STYLE = "white-space: pre-wrap;"
 const val IS_REGULAR_ACCOUNT_QUERY_PARAM = "isRegularAccount"
 const val UNLOCK_ACCOUNT_QUERY_PARAM = "unlockAccount"
